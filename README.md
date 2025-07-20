@@ -1,45 +1,58 @@
-# MkDocs Docker 环境
+# MkDocs Docker Environment
 
-本项目包含一个 `Dockerfile`，用于创建一个轻量级的 MkDocs 环境，方便本地开发和预览。
+This project provides a flexible and lightweight Docker environment for serving MkDocs sites, with support for installing custom dependencies at runtime.
 
-## 特点
+## Features
 
--   基于 `python:3.12-alpine`，确保镜像体积尽可能小。
--   内置 `mkdocs serve` 命令，支持实时重新加载。
--   配置为可从容器外部访问。
+-   **Lightweight**: Based on the `python:3.12-alpine` image.
+-   **Flexible**: Installs Python dependencies from `requirements.txt` when the container starts.
+-   **Live Reload**: Served with `mkdocs serve` for instant previews of your changes.
 
-## 如何使用
+## How to Use
 
-### 1. 前提条件
+### 1. Project Structure
 
--   确保你已经安装了 [Docker](https://www.docker.com/get-started)。
--   在项目根目录下创建一个 `docs` 文件夹，并放入你的 Markdown 文档。
--   在项目根目录下创建一个 `mkdocs.yml` 配置文件。
+For the environment to work correctly, your project should follow this structure:
 
-### 2. 构建镜像
+```
+.
+├── Dockerfile
+├── entrypoint.sh
+└── docs/
+    ├── index.md
+    ├── mkdocs.yml          # MkDocs configuration file
+    └── requirements.txt    # (Optional) Python dependencies for plugins, themes, etc.
+```
 
-在项目的根目录（`Dockerfile` 所在的目录）下运行以下命令来构建 Docker 镜像：
+**Key Points:**
+-   The `docs` directory will be mounted into the container. It must contain your `mkdocs.yml` file and your Markdown documents.
+-   If you need any MkDocs plugins, themes, or other Python packages, list them in the `docs/requirements.txt` file. The container will automatically install them on startup.
+
+### 2. Build the Image
+
+First, ensure you have [Docker](https://www.docker.com/get-started) installed. Then, run the following command in your project's root directory to build the image:
 
 ```bash
 docker build -t my-mkdocs-image .
 ```
 
-你可以将 `my-mkdocs-image` 替换为你喜欢的任何名称。
+You can replace `my-mkdocs-image` with any name you prefer.
 
-### 3. 运行容器
+### 3. Run the Container
 
-使用以下命令来启动容器：
+Use this command to start the container:
 
 ```bash
-docker run -p 8000:8000 -v ./docs:/docs my-mkdocs-image
+docker run --rm -p 8000:8000 -v ./docs:/docs my-mkdocs-image
 ```
 
-**命令解释:**
+**Command Explained:**
 
--   `-p 8000:8000`: 将你本机的 8000 端口映射到容器的 8000 端口。
--   `-v ./docs:/docs`: 将本地的 `docs` 目录挂载到容器中，实现文档内容的实时更新。
--   `my-mkdocs-image`: 你在构建步骤中为镜像设置的名称。
+-   `--rm`: Automatically removes the container when it stops, keeping your system clean.
+-   `-p 8000:8000`: Maps port 8000 on your local machine to port 8000 in the container.
+-   `-v ./docs:/docs`: Mounts your local `docs` directory into the container. This is crucial for live reloading of your content and for installing dependencies from `requirements.txt`.
+-   `my-mkdocs-image`: The name you gave the image during the build step.
 
-### 4. 访问网站
+### 4. Access Your Site
 
-现在，你可以在浏览器中打开 `http://localhost:8000` 来实时预览你的 MkDocs 网站。
+Open your web browser and navigate to `http://localhost:8000` to see your MkDocs site live. Any changes you make to your local files will be reflected instantly.

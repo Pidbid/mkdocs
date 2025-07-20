@@ -1,15 +1,21 @@
-# 1. 使用更小的 Alpine 基础镜像
+# 1. Use a smaller Alpine base image
 FROM python:3.12-alpine
 
-# 2. 设置工作目录
-WORKDIR /docs
-
-# 3. 高效地安装 mkdocs
+# 2. Install core dependencies during the build phase
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir mkdocs
 
-# 4. 声明容器将要监听的端口
+# 3. Create a dedicated directory for the entrypoint script
+RUN mkdir /app
+
+# 4. Copy the entrypoint script to the /app directory
+COPY entrypoint.sh /app/
+
+# 5. Set the working directory for mkdocs
+WORKDIR /docs
+
+# 6. Expose the port mkdocs will run on
 EXPOSE 8000
 
-# 5. 优化启动命令
-CMD ["mkdocs", "serve", "--dev-addr", "0.0.0.0:8000"]
+# 7. Set the entrypoint script to be executed when the container starts
+ENTRYPOINT ["/app/entrypoint.sh"]
